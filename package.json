@@ -1,7 +1,7 @@
 {
   "name": "Iterasys-Playwright-Cucumber",
   "version": "1.0.0",
-  "description": "Projeto de automação web com Playwright",
+  "description": "Projeto de automação mobile com Playwright",
   "main": "index.js",
   "scripts": {
     "test": "npx playwright test",

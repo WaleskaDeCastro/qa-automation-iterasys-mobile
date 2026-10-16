@@ -6,7 +6,7 @@ Este repositório contém a suíte de testes automatizados End-to-End (E2E) dese
 
 ## 🛠️ Tecnologias Utilizadas
 
-* **[Playwright](https://playwright.dev/)** – Framework moderno para automação web rápida e confiável.
+* **[Playwright](https://playwright.dev/)** – Framework moderno para automação mobile rápida e confiável.
 * **[Cucumber.js](https://cucumber.io/)** – Implementação de BDD (Behavior-Driven Development) utilizando a linguagem Gherkin em português (`# language: pt`).
 * **JavaScript (Node.js)** – Linguagem base do projeto.
 * **Page Object Model (POM)** – Organização de código para reuso e manutenibilidade.
