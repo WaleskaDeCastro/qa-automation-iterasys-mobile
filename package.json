@@ -9,6 +9,7 @@
     "test:bug": "cucumber-js --tags \"@bug\"",
     "test:filtros": "cucumber-js --tags \"@filtros\"",
     "test:acesso": "cucumber-js --tags \"@acesso\"",
+    "test:aula": "cucumber-js --tags \"@aula\"",
     "test:bdd": "cucumber-js",
     "test:bdd:paralelo": "cucumber-js -p paralelo",
     "test:bdd:headed": "cross-env HEADLESS=false npm run test:bdd",

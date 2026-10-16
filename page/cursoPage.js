@@ -72,6 +72,12 @@ class CursoPage {
     await expect(linkCurso).toBeVisible({ timeout: 15000 });
   }
 
+  async continuarCurso(indiceBotao) {
+    const botaoContinuar = this.page.getByRole('button', { name: 'Continue aprendendo' }).nth(indiceBotao);
+    await expect(botaoContinuar).toBeVisible();
+    await botaoContinuar.click();
+  }
+
   async abrirCurso(nomeCurso) {
     const linkCurso = await this.localizarLinkCurso(nomeCurso);
     await expect(linkCurso).toBeVisible({ timeout: 15000 });
@@ -87,6 +93,11 @@ class CursoPage {
     await this.page.getByText(nomeAula).click();
   }
 
+  async validarModuloEAula(modulo, nomeAula) {
+    await expect(this.page.getByText(modulo, { exact: true }).first()).toBeVisible();
+    await expect(this.page.getByText(nomeAula, { exact: false }).first()).toBeVisible();
+  }
+
   async validarAulaEOpcoesDeRetorno(nomeCurso, nomeAula) {
     await expect(this.page.locator('h1')).toContainText(nomeCurso);
     const tituloAulaVisivel = this.page.getByText(nomeAula, { exact: false })
@@ -94,6 +105,87 @@ class CursoPage {
       .first();
     await expect(tituloAulaVisivel).toBeVisible();
     await expect(this.linkVoltar).toBeVisible();
+  }
+
+  async iniciarReproducaoAula() {
+    const player = this.page.frameLocator('iframe[title="Conteúdo da unidade"]');
+    const video = player.locator('video').first();
+    if (await video.evaluate(element => element.paused)) {
+      await player.locator('.overlayState').click();
+    }
+  }
+
+  async validarPlayerCarregado() {
+    const player = this.page.frameLocator('iframe[title="Conteúdo da unidade"]');
+    const controleReproducao = player.getByRole('slider', { name: 'Barra de reprodução' });
+    const video = player.locator('video').first();
+
+    await expect(controleReproducao).toBeVisible();
+    await expect(video).toBeAttached();
+    await expect.poll(
+      () => video.evaluate(element => element.readyState >= 1 && Number.isFinite(element.duration) && element.duration > 0),
+      { timeout: 15000 }
+    ).toBe(true);
+  }
+
+  async validarReproducaoAula() {
+    const video = this.page.frameLocator('iframe[title="Conteúdo da unidade"]').locator('video').first();
+    await expect.poll(() => video.evaluate(element => !element.paused)).toBe(true);
+
+    const tempoInicial = await video.evaluate(element => element.currentTime);
+    await expect.poll(
+      () => video.evaluate(element => element.currentTime),
+      { timeout: 15000 }
+    ).toBeGreaterThan(tempoInicial);
+  }
+
+  async pausarReproducaoAula() {
+    const player = this.page.frameLocator('iframe[title="Conteúdo da unidade"]');
+    await player.locator('.overlayState').click();
+  }
+
+  async retomarReproducaoAula() {
+    await this.iniciarReproducaoAula();
+  }
+
+  async validarAulaPausada() {
+    const video = this.page.frameLocator('iframe[title="Conteúdo da unidade"]').locator('video').first();
+    await expect.poll(() => video.evaluate(element => element.paused)).toBe(true);
+  }
+
+  async validarAvancoERecuoAula() {
+    const player = this.page.frameLocator('iframe[title="Conteúdo da unidade"]');
+    const video = player.locator('video').first();
+    const controleReproducao = player.getByRole('slider', { name: 'Barra de reprodução' });
+    const caixaControle = await controleReproducao.boundingBox();
+    const desabilitado = await controleReproducao.getAttribute('aria-disabled');
+
+    if (!caixaControle || caixaControle.width <= 0 || desabilitado === 'true') {
+      return false;
+    }
+
+    const duracao = await video.evaluate(element => element.duration);
+    const tempoAtual = await video.evaluate(element => element.currentTime);
+    const posicaoRecuo = caixaControle.width * 0.2;
+    const posicaoAvanco = caixaControle.width * 0.8;
+
+    if (tempoAtual >= duracao * 0.75) {
+      await controleReproducao.click({ position: { x: posicaoRecuo, y: caixaControle.height / 2 } });
+      await expect.poll(() => video.evaluate(element => element.currentTime)).toBeLessThan(tempoAtual);
+    }
+
+    const tempoAntesAvanco = await video.evaluate(element => element.currentTime);
+    await controleReproducao.click({ position: { x: posicaoAvanco, y: caixaControle.height / 2 } });
+    await expect.poll(() => video.evaluate(element => element.currentTime)).toBeGreaterThan(tempoAntesAvanco);
+
+    const tempoAntesRecuo = await video.evaluate(element => element.currentTime);
+    await controleReproducao.click({ position: { x: posicaoRecuo, y: caixaControle.height / 2 } });
+    await expect.poll(() => video.evaluate(element => element.currentTime)).toBeLessThan(tempoAntesRecuo);
+    return true;
+  }
+
+  async recarregarAula() {
+    await this.page.reload({ waitUntil: 'domcontentloaded' });
   }
 
   async voltar() {
