@@ -78,6 +78,21 @@ class CursoPage {
     await botaoContinuar.click();
   }
 
+  async acessarCursoParaProgresso(nomeCurso, formaAcesso) {
+    if (formaAcesso === 'catálogo') {
+      await this.abrirCurso(nomeCurso);
+      return;
+    }
+
+    if (formaAcesso === 'carregar mais') {
+      await this.carregarMaisCursos();
+      await this.abrirCurso(nomeCurso);
+      return;
+    }
+
+    throw new Error(`Forma de acesso ao curso inválida: "${formaAcesso}".`);
+  }
+
   async abrirCurso(nomeCurso) {
     const linkCurso = await this.localizarLinkCurso(nomeCurso);
     await expect(linkCurso).toBeVisible({ timeout: 15000 });
@@ -86,11 +101,24 @@ class CursoPage {
   }
 
   async validarTituloCurso(nomeCurso) {
-    await expect(this.page.getByText(nomeCurso, { exact: true }).first()).toBeVisible();
+    await expect(
+      this.page.getByText(nomeCurso, { exact: true }).filter({ visible: true }).first()
+    ).toBeVisible();
   }
 
   async abrirAula(nomeAula) {
     await this.page.getByText(nomeAula).click();
+  }
+
+  async abrirAulaParaProgresso(nomeAula) {
+    const aula = this.page.locator('#component_1625143124938_25')
+      .getByText(nomeAula, { exact: false })
+      .filter({ visible: true })
+      .first();
+
+    await expect(aula).toBeVisible({ timeout: 15000 });
+    await aula.scrollIntoViewIfNeeded();
+    await aula.click();
   }
 
   async validarModuloEAula(modulo, nomeAula) {
@@ -126,6 +154,20 @@ class CursoPage {
       () => video.evaluate(element => element.readyState >= 1 && Number.isFinite(element.duration) && element.duration > 0),
       { timeout: 15000 }
     ).toBe(true);
+  }
+
+  async validarProgressoAula(progressoEsperado) {
+    await expect(this.page.locator('#wrapper')).toContainText(progressoEsperado);
+  }
+
+  async voltarPeloNavegador() {
+    await this.page.goBack();
+    await this.page.goBack();
+  }
+
+  async acessarCatalogoCursos() {
+    await this.page.goto('https://iterasys.learnworlds.com/courses');
+    await expect(this.page.locator('#el_1750969932646_351')).toContainText('Cursos');
   }
 
   async validarReproducaoAula() {

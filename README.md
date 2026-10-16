@@ -11,3 +11,4 @@ Este repositório contém a suíte de testes automatizados End-to-End (E2E) dese
 * **JavaScript (Node.js)** – Linguagem base do projeto.
 * **Page Object Model (POM)** – Organização de código para reuso e manutenibilidade.
 
+
